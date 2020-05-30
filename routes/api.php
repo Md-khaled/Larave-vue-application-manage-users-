@@ -17,3 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::apiResources(['user' => 'Api\UserController']);
+Route::get('profile', 'Api\UserController@profile');
+Route::get('findUser', 'API\UserController@search');
+Route::put('profile', 'Api\UserController@updateProfile');

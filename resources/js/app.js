@@ -7,7 +7,82 @@
 require('./bootstrap');
 
 window.Vue = require('vue');
+/*
+custom authorized user file
+*/
+import Gate from './Gate';
+Vue.prototype.$gate=new Gate(window.user);
+/*
+moment js
+https://momentjs.com/
+*/
+import moment from 'moment';
+/*
+vue form validation
+https://github.com/cretueusebiu/vform
+*/
+import { Form, HasError, AlertError } from 'vform';
+window.Form=Form;
+Vue.component(HasError.name, HasError)
+Vue.component(AlertError.name, AlertError)
+import VueRouter from 'vue-router'
+Vue.use(VueRouter)
+/*
+vue progress var
+https://github.com/hilongjw/vue-progressbar
+*/
+import VueProgressBar from 'vue-progressbar'
+Vue.use(VueProgressBar, {
+  color: 'rgb(143, 255, 199)',
+  failedColor: 'red',
+  height: '4px'
+})
+/*
+Sweet Alert
+https://sweetalert2.github.io/
+*/
+import Swal from 'sweetalert2'
+window.swal=Swal;
+const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  onOpen: (toast) => {
+    toast.addEventListener('mouseenter', Swal.stopTimer)
+    toast.addEventListener('mouseleave', Swal.resumeTimer)
+  }
+})
+window.toast=Toast;
+/*custome vue event*/
+window.Fire=new Vue();
+/*
+vue pagination
+https://github.com/gilbitron/laravel-vue-pagination
+*/
+Vue.component('pagination', require('laravel-vue-pagination'));
 
+let routes = [
+  { path: '/dashboard', component: require('./components/Dashboard.vue').default },
+  { path: '/developer', component: require('./components/Developer.vue').default },
+  { path: '/users', component: require('./components/Users.vue').default },
+  { path: '/profile', component: require('./components/Profile.vue').default },
+  { path: '*', component: require('./components/404.vue').default }
+]
+
+
+const router = new VueRouter({
+  mode: 'history',
+  routes // short for `routes: routes`
+})
+
+Vue.filter('upText',function (txt) {
+	return txt.charAt(0).toUpperCase()+txt.slice(1);
+});
+Vue.filter('formateDate',function (dt) {
+	return moment(dt).format('MMMM Do YYYY');
+});
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -18,7 +93,24 @@ window.Vue = require('vue');
 
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
+Vue.component(
+    'passport-clients',
+    require('./components/passport/Clients.vue').default
+);
 
+Vue.component(
+    'passport-authorized-clients',
+    require('./components/passport/AuthorizedClients.vue').default
+);
+
+Vue.component(
+    'passport-personal-access-tokens',
+    require('./components/passport/PersonalAccessTokens.vue').default
+);
+Vue.component(
+    'not-found',
+    require('./components/404.vue').default
+);
 Vue.component('example-component', require('./components/ExampleComponent.vue').default);
 
 /**
@@ -29,4 +121,16 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
 
 const app = new Vue({
     el: '#app',
+     router,
+     data: {
+     	search:'',
+     },
+     methods:{
+     	searchby:_.debounce(()=>{
+     		Fire.$emit('searching');
+     	},1000),
+     	printme() {
+     		window.print();
+     	}
+     }
 });
